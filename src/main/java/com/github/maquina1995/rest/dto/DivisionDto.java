@@ -10,6 +10,17 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * Es superfluo el mensaje que hemos puesto en las líneas 28 y 31 pero se ha
+ * dado el caso que en local aparece el mensaje en español en los test de la
+ * estrategia 3 y en inglés en los de la estrategia 1 y 2
+ * <p>
+ * Como medida temporal hasta que sepa el porque pasa eso, he decidido setearlo
+ * en inglés el mensaje para que pase la pipeline
+ * 
+ * @author MaQuiNa1995
+ *
+ */
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -18,9 +29,11 @@ import lombok.Setter;
 public class DivisionDto {
 
 	@NotNull
-	@Min(1)
+	@Min(value = 1,
+	        message = "must be greater than or equal to 1")
 	private Double dividend;
-	@Min(1)
+	@Min(value = 1,
+	        message = "must be greater than or equal to 1")
 	@NotNull
 	private Double divisor;
 }

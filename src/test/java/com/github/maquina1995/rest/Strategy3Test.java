@@ -230,8 +230,8 @@ class Strategy3Test {
 
 		Map<String, String> errorMap = response.getBody();
 		Assertions.assertEquals(2, errorMap.size());
-		Assertions.assertEquals("debe ser mayor que o igual a 1", errorMap.get("divisor"));
-		Assertions.assertEquals("debe ser mayor que o igual a 1", errorMap.get("dividend"));
+		Assertions.assertEquals("must be greater than or equal to 1", errorMap.get("divisor"));
+		Assertions.assertEquals("must be greater than or equal to 1", errorMap.get("dividend"));
 	}
 
 }
