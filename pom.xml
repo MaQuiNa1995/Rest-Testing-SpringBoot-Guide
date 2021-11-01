@@ -4,7 +4,7 @@
 						https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<groupId>com.github.maquina1995</groupId>
 	<artifactId>rest-testing</artifactId>
 	<version>1.0.0</version>
@@ -16,6 +16,7 @@
 	</parent>
 
 	<properties>
+		<jacoco.plugin.version>0.8.7</jacoco.plugin.version>
 		<swagger.version>[3, 4)</swagger.version>
 	</properties>
 
@@ -32,7 +33,7 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 		</dependency>
-			<dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
@@ -41,6 +42,34 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>${jacoco.plugin.version}</version>
+				<configuration>
+					<outputDirectory>${project.build.directory}/</outputDirectory>
+					<formats>XML</formats>
+				</configuration>
+				<executions>
+					<execution>
+						<id>docs-jacoco-prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>docs-jacoco-report</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -54,6 +83,25 @@
 					</annotationProcessorPaths>
 					<generatedSourcesDirectory>${project.build.directory}/generated-sources</generatedSourcesDirectory>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<doclint>none</doclint>
+					<failOnError>false</failOnError>
+					<sourceFileExcludes>
+						<sourceFileExclude>${project.build.directory}/generated-sources/**/*</sourceFileExclude>
+					</sourceFileExcludes>
+				</configuration>
+				<executions>
+					<execution>
+						<id>attach-javadoc</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
