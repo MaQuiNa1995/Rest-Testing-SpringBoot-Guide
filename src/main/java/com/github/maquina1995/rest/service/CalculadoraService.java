@@ -8,6 +8,6 @@ public interface CalculadoraService {
 
 	public double multiply(double num1, double num2);
 
-	public double divide(double dividend, double quotient);
+	public double divide(double dividend, double divisor);
 
 }

@@ -21,8 +21,8 @@ public class CalculadoraServiceImpl implements CalculadoraService {
 	}
 
 	@Override
-	public double divide(double dividend, double quotient) {
-		return dividend / quotient;
+	public double divide(double dividend, double divisor) {
+		return dividend / divisor;
 	}
 
 }

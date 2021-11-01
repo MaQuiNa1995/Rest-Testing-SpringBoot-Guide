@@ -2,7 +2,6 @@ package com.github.maquina1995.rest;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.BDDMockito;
@@ -14,11 +13,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.maquina1995.rest.configuration.BindingControllerAdvice;
 import com.github.maquina1995.rest.controller.CalculadoraController;
+import com.github.maquina1995.rest.controller.handler.ControllerExceptionHandler;
+import com.github.maquina1995.rest.dto.DivisionDto;
 import com.github.maquina1995.rest.service.CalculadoraService;
 
 /**
@@ -29,8 +34,7 @@ import com.github.maquina1995.rest.service.CalculadoraService;
  * <img src=
  * "https://thepracticaldeveloper.com/images/posts/uploads/2017/07/tests_mockmvc_wm.png">
  * 
- * @see la imagen pertenece a
- *      https://thepracticaldeveloper.com/guide-spring-boot-controller-tests/#strategy-1-spring-mockmvc-example-in-standalone-mode
+ * @see https://thepracticaldeveloper.com/guide-spring-boot-controller-tests/#strategy-1-spring-mockmvc-example-in-standalone-mode
  * 
  * @author MaQuiNa1995
  */
@@ -38,7 +42,7 @@ import com.github.maquina1995.rest.service.CalculadoraService;
 class Strategy1Test {
 
 	private MockMvc mvc;
-	private JacksonTester<Double> jacksonTester;
+	private JacksonTester<DivisionDto> divisionDtoJacksonTester;
 
 	@InjectMocks
 	private CalculadoraController calculadoraController;
@@ -55,7 +59,7 @@ class Strategy1Test {
 		JacksonTester.initFields(this, new ObjectMapper());
 
 		mvc = MockMvcBuilders.standaloneSetup(calculadoraController)
-		        // .setControllerAdvice(new ControllerExceptionHandler())
+		        .setControllerAdvice(new BindingControllerAdvice(), new ControllerExceptionHandler())
 		        .build();
 	}
 
@@ -67,8 +71,9 @@ class Strategy1Test {
 		        .willReturn(15d);
 
 		// when
-		MockHttpServletResponse response = mvc.perform(MockMvcRequestBuilders.get("/calculadora/sum?num1=10&num2=5")
-		        .accept(MediaType.APPLICATION_JSON))
+		MockHttpServletResponse response = mvc.perform(MockMvcRequestBuilders.get("/calculadora/sum")
+		        .queryParam("num1", "10")
+		        .queryParam("num2", "5"))
 		        .andReturn()
 		        .getResponse();
 
@@ -78,18 +83,102 @@ class Strategy1Test {
 	}
 
 	@Test
-	@Disabled
-	void minusTest() {
+	void minusTest() throws Exception {
+
+		// given
+		BDDMockito.given(calculadoraService.minus(10d, 5d))
+		        .willReturn(5d);
+
+		// when
+		MockHttpServletResponse response = mvc
+		        .perform(MockMvcRequestBuilders.get("/calculadora/minus/{num1}/{num2}", 10d, 5d))
+		        .andDo(MockMvcResultHandlers.print())
+		        .andReturn()
+		        .getResponse();
+
+		// then
+		Assertions.assertEquals(HttpStatus.OK.value(), response.getStatus());
+		Assertions.assertEquals("5.0", response.getContentAsString());
 	}
 
 	@Test
-	@Disabled
-	void multiplyTest() {
+	void multiplyTest() throws Exception {
+
+		// given
+		BDDMockito.given(calculadoraService.multiply(5, 5))
+		        .willReturn(25d);
+
+		// when
+		MockHttpServletResponse response = mvc.perform(MockMvcRequestBuilders.get("/calculadora/multiply")
+		        .queryParam("num1", "5")
+		        .queryParam("num2", "5"))
+		        .andDo(MockMvcResultHandlers.print())
+		        .andReturn()
+		        .getResponse();
+
+		// then
+		Assertions.assertEquals(HttpStatus.OK.value(), response.getStatus());
+		Assertions.assertEquals("25.0", response.getContentAsString());
+
 	}
 
 	@Test
-	@Disabled
-	void divideTest() {
+	void divideTest() throws Exception {
+
+		// given
+		BDDMockito.given(calculadoraService.divide(10, 5))
+		        .willReturn(2d);
+
+		DivisionDto dto = DivisionDto.builder()
+		        .dividend(10d)
+		        .divisor(5d)
+		        .build();
+
+		// when
+		MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.post("/calculadora/divide")
+		        .contentType(MediaType.APPLICATION_JSON)
+		        .content(divisionDtoJacksonTester.write(dto)
+		                .getJson());
+
+		MockHttpServletResponse response = mvc.perform(builder)
+		        .andDo(MockMvcResultHandlers.print())
+		        .andReturn()
+		        .getResponse();
+
+		// then
+		Assertions.assertEquals(HttpStatus.OK.value(), response.getStatus());
+		Assertions.assertEquals("2.0", response.getContentAsString());
+
+	}
+
+	@Test
+	void divideBadRequestTest() throws Exception {
+
+		// given
+		DivisionDto dto = DivisionDto.builder()
+		        .dividend(0d)
+		        .divisor(0d)
+		        .build();
+
+		// when
+		MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.post("/calculadora/divide")
+		        .contentType(MediaType.APPLICATION_JSON)
+		        .content(divisionDtoJacksonTester.write(dto)
+		                .getJson());
+
+		mvc.perform(builder)
+		        .andDo(MockMvcResultHandlers.print())
+		        // status
+		        .andExpect(MockMvcResultMatchers.status()
+		                .isBadRequest())
+		        .andExpect(MockMvcResultMatchers.content()
+		                .contentType(MediaType.APPLICATION_JSON))
+		        // body
+		        .andExpect(MockMvcResultMatchers.jsonPath("$.divisor")
+		                .value("must be greater than or equal to 1"))
+		        .andExpect(MockMvcResultMatchers.jsonPath("$.dividend")
+		                .value("must be greater than or equal to 1"));
+
 	}
 
 }

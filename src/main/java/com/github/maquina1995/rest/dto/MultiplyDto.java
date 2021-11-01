@@ -6,8 +6,8 @@ import lombok.Setter;
 
 @Getter
 @Setter(value = AccessLevel.PRIVATE)
-public class Calculadora {
+public class MultiplyDto {
 
-	private Integer numero1;
-	private Integer numero2;
+	private Double num1;
+	private Double num2;
 }
