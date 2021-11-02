@@ -3,6 +3,7 @@ package com.github.maquina1995.rest.controller.handler;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 
 import org.springframework.http.HttpStatus;
@@ -33,6 +34,20 @@ public class ControllerExceptionHandler {
 			                : error.getObjectName();
 			        String errorMessage = error.getDefaultMessage();
 			        errors.put(fieldName, errorMessage);
+		        });
+		return errors;
+	}
+
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(ConstraintViolationException.class)
+	public Map<String, String> handleConstraintException(ConstraintViolationException ex) {
+		Map<String, String> errors = new HashMap<>();
+		ex.getConstraintViolations()
+		        .forEach(e -> {
+			        String string = e.getPropertyPath()
+			                .toString();
+			        int pointIndex = string.indexOf(".");
+			        errors.put(string.substring(pointIndex + 1), e.getMessage());
 		        });
 		return errors;
 	}

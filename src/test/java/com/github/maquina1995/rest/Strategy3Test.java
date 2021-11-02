@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.github.maquina1995.rest.dto.DivisionDto;
+import com.github.maquina1995.rest.dto.RoundDto;
 import com.github.maquina1995.rest.service.CalculadoraService;
 
 /**
@@ -209,19 +210,18 @@ class Strategy3Test {
 	 */
 	@Test
 	void divideBadRequestTest() {
-		// given
-		BDDMockito.given(calculadoraService.divide(10, 5))
-		        .willReturn(2d);
 
+		// given
 		DivisionDto dto = DivisionDto.builder()
 		        .dividend(0d)
 		        .divisor(0d)
 		        .build();
 		HttpEntity<DivisionDto> httpEntity = new HttpEntity<>(dto);
+
+		// when
 		ParameterizedTypeReference<Map<String, String>> typeReference = new ParameterizedTypeReference<Map<String, String>>() {
 		};
 
-		// when
 		ResponseEntity<Map<String, String>> response = testRestTemplate.exchange("/calculadora/divide", HttpMethod.POST,
 		        httpEntity, typeReference);
 
@@ -232,6 +232,67 @@ class Strategy3Test {
 		Assertions.assertEquals(2, errorMap.size());
 		Assertions.assertEquals("must be greater than or equal to 1", errorMap.get("divisor"));
 		Assertions.assertEquals("must be greater than or equal to 1", errorMap.get("dividend"));
+	}
+
+	@Test
+	void squareRootBadRequestTest() {
+
+		// when
+		ParameterizedTypeReference<Map<String, String>> typeReference = new ParameterizedTypeReference<Map<String, String>>() {
+		};
+
+		ResponseEntity<Map<String, String>> response = testRestTemplate.exchange("/calculadora/square-root?number=0",
+		        HttpMethod.GET, null, typeReference);
+
+		// then
+		Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+
+		Map<String, String> errorMap = response.getBody();
+		Assertions.assertEquals(1, errorMap.size());
+		Assertions.assertEquals("Need to be greater than 1", errorMap.get("number"));
+	}
+
+	@Test
+	void absoluteBadRequestTest() {
+
+		// when
+		ParameterizedTypeReference<Map<String, String>> typeReference = new ParameterizedTypeReference<Map<String, String>>() {
+		};
+
+		ResponseEntity<Map<String, String>> response = testRestTemplate.exchange("/calculadora/absolute/0",
+		        HttpMethod.GET, null, typeReference);
+
+		// then
+		Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+
+		Map<String, String> errorMap = response.getBody();
+		Assertions.assertEquals(1, errorMap.size());
+		Assertions.assertEquals("Need to be greater than 1", errorMap.get("number"));
+	}
+
+	@Test
+	void roundBadRequestTest() {
+
+		// given
+		RoundDto dto = RoundDto.builder()
+		        .number(0d)
+		        .build();
+		HttpEntity<RoundDto> httpEntity = new HttpEntity<>(dto);
+
+		// when
+		ParameterizedTypeReference<Map<String, String>> typeReference = new ParameterizedTypeReference<Map<String, String>>() {
+		};
+
+		ResponseEntity<Map<String, String>> response = testRestTemplate.exchange("/calculadora/round", HttpMethod.POST,
+		        httpEntity, typeReference);
+
+		// then
+		Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+
+		Map<String, String> errorMap = response.getBody();
+		Assertions.assertEquals(1, errorMap.size());
+		Assertions.assertEquals("Para redondear se tiene que introducir un valor decimal no exacto",
+		        errorMap.get("roundDto"));
 	}
 
 }

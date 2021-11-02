@@ -2,6 +2,7 @@ package com.github.maquina1995.rest;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.BDDMockito;
@@ -21,9 +22,11 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.maquina1995.rest.configuration.BindingControllerAdvice;
+import com.github.maquina1995.rest.configuration.ValidationConfiguration;
 import com.github.maquina1995.rest.controller.CalculadoraController;
 import com.github.maquina1995.rest.controller.handler.ControllerExceptionHandler;
 import com.github.maquina1995.rest.dto.DivisionDto;
+import com.github.maquina1995.rest.dto.RoundDto;
 import com.github.maquina1995.rest.service.CalculadoraService;
 
 /**
@@ -43,6 +46,7 @@ class Strategy1Test {
 
 	private MockMvc mvc;
 	private JacksonTester<DivisionDto> divisionDtoJacksonTester;
+	private JacksonTester<RoundDto> roundDtoJacksonTester;
 
 	@InjectMocks
 	private CalculadoraController calculadoraController;
@@ -179,6 +183,84 @@ class Strategy1Test {
 		        .andExpect(MockMvcResultMatchers.jsonPath("$.dividend")
 		                .value("must be greater than or equal to 1"));
 
+	}
+
+	/**
+	 * la razón por la que este test no se puede hacer es porque es el contexto de
+	 * spring a traves del bean
+	 * {@link ValidationConfiguration#methodValidationPostProcessor()} es el
+	 * encargado de la validación
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	@Disabled("No se puede hacer este test debido a que no se carga el contexto de spring en la estrategia 1")
+	void squareRootRequestTest() throws Exception {
+
+		// when
+		MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.get("/calculadora/square-root")
+		        .queryParam("number", "0");
+
+		mvc.perform(builder)
+		        .andDo(MockMvcResultHandlers.print())
+		        // El status aunque estemos pasando un argumento inválido será un 200
+		        .andExpect(MockMvcResultMatchers.status()
+		                .isBadRequest())
+		        .andReturn();
+	}
+
+	/**
+	 * la razón por la que este test no se puede hacer es porque es el contexto de
+	 * spring a traves del bean
+	 * {@link ValidationConfiguration#methodValidationPostProcessor()} es el
+	 * encargado de la validación
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	@Disabled("No se puede hacer este test debido a que no se carga el contexto de spring en la estrategia 1")
+	void absoluteBadRequestTest() throws Exception {
+
+		// when
+		MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.get("/calculadora/absolute/{number}", 0);
+
+		mvc.perform(builder)
+		        .andDo(MockMvcResultHandlers.print())
+		        .andExpect(MockMvcResultMatchers.status()
+		                .isBadRequest())
+		        .andExpect(MockMvcResultMatchers.jsonPath("$.number")
+		                .value("must be greater than or equal to 1"));
+	}
+
+	/**
+	 * la razón por la que este test no se puede hacer es porque es el contexto de
+	 * spring el que se encarga de la validación
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	@Disabled("No se puede hacer este test debido a que no se carga el contexto de spring en la estrategia 1")
+	void roundBadRequestTest() throws Exception {
+
+		// given
+		RoundDto dto = RoundDto.builder()
+		        .number(1.0d)
+		        .build();
+
+		// when
+		MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.post("/calculadora/round")
+		        .contentType(MediaType.APPLICATION_JSON)
+		        .content(roundDtoJacksonTester.write(dto)
+		                .getJson());
+
+		mvc.perform(builder)
+		        .andDo(MockMvcResultHandlers.print())
+
+		        // then
+		        .andExpect(MockMvcResultMatchers.status()
+		                .isBadRequest())
+		        .andExpect(MockMvcResultMatchers.jsonPath("$.roundDto")
+		                .value("Para redondear se tiene que introducir un valor decimal no exacto"));
 	}
 
 }

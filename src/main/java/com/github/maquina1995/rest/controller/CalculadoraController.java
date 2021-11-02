@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.github.maquina1995.rest.dto.DivisionDto;
 import com.github.maquina1995.rest.dto.MultiplyDto;
+import com.github.maquina1995.rest.dto.RoundDto;
 import com.github.maquina1995.rest.service.CalculadoraService;
 
 import lombok.RequiredArgsConstructor;
@@ -35,12 +36,12 @@ public class CalculadoraController {
 	private final CalculadoraService calculadoraService;
 
 	@GetMapping("/sum")
-	public double sum(@RequestParam @Min(1) double num1, @RequestParam double num2) {
+	public double sum(@RequestParam double num1, @RequestParam double num2) {
 		return calculadoraService.sum(num1, num2);
 	}
 
 	@GetMapping("/minus/{num1}/{num2}")
-	public double minus(@PathVariable @Min(1) Double num1, @PathVariable Double num2) {
+	public double minus(@PathVariable Double num1, @PathVariable Double num2) {
 		return calculadoraService.minus(num1, num2);
 	}
 
@@ -52,5 +53,30 @@ public class CalculadoraController {
 	@PostMapping("/divide")
 	public double divide(@Valid @RequestBody DivisionDto calculoDto) {
 		return calculadoraService.divide(calculoDto.getDividend(), calculoDto.getDivisor());
+	}
+
+	/**
+	 * para que en local no esté en español y en remoto en la pipe de github en
+	 * inglés se decide setear en inglés el mensaje
+	 */
+	@GetMapping("/square-root")
+	public double squareRoot(@RequestParam @Min(value = 1,
+	        message = "Need to be greater than 1") Integer number) {
+		return calculadoraService.squareRoot(number);
+	}
+
+	/**
+	 * para que en local no esté en español y en remoto en la pipe de github en
+	 * inglés se decide setear en inglés el mensaje
+	 */
+	@GetMapping("/absolute/{number}")
+	public double absolute(@PathVariable @Min(value = 1,
+	        message = "Need to be greater than 1") Integer number) {
+		return calculadoraService.absolute(number);
+	}
+
+	@PostMapping("/round")
+	public double round(@Valid @RequestBody RoundDto dto) {
+		return calculadoraService.round(dto.getNumber());
 	}
 }

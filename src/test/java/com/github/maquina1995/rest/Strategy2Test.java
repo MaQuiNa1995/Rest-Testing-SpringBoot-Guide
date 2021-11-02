@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.github.maquina1995.rest.controller.CalculadoraController;
 import com.github.maquina1995.rest.dto.DivisionDto;
+import com.github.maquina1995.rest.dto.RoundDto;
 import com.github.maquina1995.rest.service.CalculadoraService;
 
 /**
@@ -44,6 +45,8 @@ class Strategy2Test {
 	private MockMvc mvc;
 	@Autowired
 	private JacksonTester<DivisionDto> divisionDtoJacksonTester;
+	@Autowired
+	private JacksonTester<RoundDto> roundDtoJacksonTester;
 
 	@MockBean
 	private CalculadoraService calculadoraService;
@@ -165,4 +168,56 @@ class Strategy2Test {
 		                .value("must be greater than or equal to 1"));
 	}
 
+	@Test
+	void squareRootBadRequestTest() throws Exception {
+
+		// when
+		MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.get("/calculadora/square-root")
+		        .queryParam("number", "0");
+
+		mvc.perform(builder)
+		        .andDo(MockMvcResultHandlers.print())
+		        .andExpect(MockMvcResultMatchers.status()
+		                .isBadRequest())
+		        .andExpect(MockMvcResultMatchers.jsonPath("$.number")
+		                .value("Need to be greater than 1"));
+	}
+
+	@Test
+	void absoluteBadRequestTest() throws Exception {
+
+		// when
+		MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.get("/calculadora/absolute/{number}", 0);
+
+		mvc.perform(builder)
+		        .andDo(MockMvcResultHandlers.print())
+		        .andExpect(MockMvcResultMatchers.status()
+		                .isBadRequest())
+		        .andExpect(MockMvcResultMatchers.jsonPath("$.number")
+		                .value("Need to be greater than 1"));
+	}
+
+	@Test
+	void roundBadRequestTest() throws Exception {
+
+		// given
+		RoundDto dto = RoundDto.builder()
+		        .number(1.0d)
+		        .build();
+
+		// when
+		MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.post("/calculadora/round")
+		        .contentType(MediaType.APPLICATION_JSON)
+		        .content(roundDtoJacksonTester.write(dto)
+		                .getJson());
+
+		mvc.perform(builder)
+		        .andDo(MockMvcResultHandlers.print())
+
+		        // then
+		        .andExpect(MockMvcResultMatchers.status()
+		                .isBadRequest())
+		        .andExpect(MockMvcResultMatchers.jsonPath("$.roundDto")
+		                .value("Para redondear se tiene que introducir un valor decimal no exacto"));
+	}
 }
