@@ -1,13 +1,15 @@
-package com.github.maquina1995.rest;
+package com.github.maquina1995.rest.unitary;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.BDDMockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.json.JacksonTester;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -16,41 +18,58 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.maquina1995.rest.configuration.BindingControllerAdvice;
+import com.github.maquina1995.rest.configuration.ValidationConfiguration;
 import com.github.maquina1995.rest.controller.CalculadoraController;
+import com.github.maquina1995.rest.controller.handler.ControllerExceptionHandler;
 import com.github.maquina1995.rest.dto.DivisionDto;
 import com.github.maquina1995.rest.dto.RoundDto;
 import com.github.maquina1995.rest.service.CalculadoraService;
 
 /**
- * WebApplicationContext, en este caso se carga el contexto de spring pero
- * usamos un servidor embebido por lo tanto no habrá un servidor desplegado
+ * Modo independiente, en este caso no se carga el contexto de spring por lo
+ * tanto no tendremos un servidor sino que llamaremos directamente a las clases
+ * usando con mockito
  * <p>
  * <img src=
- * "https://thepracticaldeveloper.com/images/posts/uploads/2017/07/tests_mockmvc_with_context_wm.png">
+ * "https://thepracticaldeveloper.com/images/posts/uploads/2017/07/tests_mockmvc_wm.png">
  * 
- * @see https://thepracticaldeveloper.com/guide-spring-boot-controller-tests/#strategy-2-spring-mockmvc-example-with-webapplicationcontext
+ * @see https://thepracticaldeveloper.com/guide-spring-boot-controller-tests/#strategy-1-spring-mockmvc-example-in-standalone-mode
  * 
  * @author MaQuiNa1995
  */
-@AutoConfigureJsonTesters
-@WebMvcTest(CalculadoraController.class)
-class Strategy2Test {
+@ExtendWith(MockitoExtension.class)
+class Strategy1Test {
 
-	/**
-	 * Al tener contexto podemos usa autowired de {@link MockMvc} y
-	 * {@link JacksonTester}
-	 */
-	@Autowired
 	private MockMvc mvc;
-	@Autowired
 	private JacksonTester<DivisionDto> divisionDtoJacksonTester;
-	@Autowired
 	private JacksonTester<RoundDto> roundDtoJacksonTester;
 
-	@MockBean
+	@InjectMocks
+	private CalculadoraController calculadoraController;
+	@Mock
 	private CalculadoraService calculadoraService;
 
+	@BeforeEach
+	public void setup() {
+		// Si no usasemos MockitoExtension tendríamos que incluir la siguiente línea
+		// MockitoAnnotations.initMocks(this);
+
+		// Al no tener el contexto de spring no podemos usar @AutoConfigureJsonTesters y
+		// tendremos que inicializar el objeto nosotros
+		JacksonTester.initFields(this, new ObjectMapper());
+
+		mvc = MockMvcBuilders.standaloneSetup(calculadoraController)
+		        .setControllerAdvice(new BindingControllerAdvice(), new ControllerExceptionHandler())
+		        .build();
+	}
+
+	/**
+	 * Test de: {@link CalculadoraController#sum(double, double)}
+	 */
 	@Test
 	void sumTest() throws Exception {
 
@@ -70,6 +89,9 @@ class Strategy2Test {
 		Assertions.assertEquals("15.0", response.getContentAsString());
 	}
 
+	/**
+	 * Test de: {@link CalculadoraController#minus(double, double)}
+	 */
 	@Test
 	void minusTest() throws Exception {
 
@@ -89,6 +111,10 @@ class Strategy2Test {
 		Assertions.assertEquals("5.0", response.getContentAsString());
 	}
 
+	/**
+	 * Test de:
+	 * {@link CalculadoraController#multiply(com.github.maquina1995.rest.dto.MultiplyDto)}
+	 */
 	@Test
 	void multiplyTest() throws Exception {
 
@@ -110,6 +136,9 @@ class Strategy2Test {
 
 	}
 
+	/**
+	 * Test de: {@link CalculadoraController#divide(DivisionDto)}
+	 */
 	@Test
 	void divideTest() throws Exception {
 
@@ -139,6 +168,9 @@ class Strategy2Test {
 
 	}
 
+	/**
+	 * Test de: {@link CalculadoraController#divide(DivisionDto)}
+	 */
 	@Test
 	void divideBadRequestTest() throws Exception {
 
@@ -166,10 +198,21 @@ class Strategy2Test {
 		                .value("must be greater than or equal to 1"))
 		        .andExpect(MockMvcResultMatchers.jsonPath("$.dividend")
 		                .value("must be greater than or equal to 1"));
+
 	}
 
+	/**
+	 * 
+	 * Test de: {@link CalculadoraController#squareRoot(Integer)}
+	 * <p>
+	 * La razón por la que este test no se puede hacer es porque es el contexto de
+	 * spring a traves del bean
+	 * {@link ValidationConfiguration#methodValidationPostProcessor()} es el
+	 * encargado de la validación
+	 */
 	@Test
-	void squareRootBadRequestTest() throws Exception {
+	@Disabled("No se puede hacer este test debido a que no se carga el contexto de spring en la estrategia 1")
+	void squareRootRequestTest() throws Exception {
 
 		// when
 		MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.get("/calculadora/square-root")
@@ -177,13 +220,24 @@ class Strategy2Test {
 
 		mvc.perform(builder)
 		        .andDo(MockMvcResultHandlers.print())
+		        // El status aunque estemos pasando un argumento inválido será un 200
 		        .andExpect(MockMvcResultMatchers.status()
 		                .isBadRequest())
-		        .andExpect(MockMvcResultMatchers.jsonPath("$.number")
-		                .value("Need to be greater than 1"));
+		        .andReturn();
 	}
 
+	/**
+	 * Test de: {@link CalculadoraController#absolute(Integer)}
+	 * <p>
+	 * La razón por la que este test no se puede hacer es porque es el contexto de
+	 * spring a traves del bean
+	 * {@link ValidationConfiguration#methodValidationPostProcessor()} es el
+	 * encargado de la validación
+	 * 
+	 * @throws Exception
+	 */
 	@Test
+	@Disabled("No se puede hacer este test debido a que no se carga el contexto de spring en la estrategia 1")
 	void absoluteBadRequestTest() throws Exception {
 
 		// when
@@ -194,10 +248,19 @@ class Strategy2Test {
 		        .andExpect(MockMvcResultMatchers.status()
 		                .isBadRequest())
 		        .andExpect(MockMvcResultMatchers.jsonPath("$.number")
-		                .value("Need to be greater than 1"));
+		                .value("must be greater than or equal to 1"));
 	}
 
+	/**
+	 * Test de: {@link CalculadoraController#round(RoundDto)}
+	 * <p>
+	 * La razón por la que este test no se puede hacer es porque es el contexto de
+	 * spring el que se encarga de la validación
+	 * 
+	 * @throws Exception
+	 */
 	@Test
+	@Disabled("No se puede hacer este test debido a que no se carga el contexto de spring en la estrategia 1")
 	void roundBadRequestTest() throws Exception {
 
 		// given
@@ -220,4 +283,5 @@ class Strategy2Test {
 		        .andExpect(MockMvcResultMatchers.jsonPath("$.roundDto")
 		                .value("Para redondear se tiene que introducir un valor decimal no exacto"));
 	}
+
 }

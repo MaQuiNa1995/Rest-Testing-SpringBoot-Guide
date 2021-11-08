@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.github.maquina1995.rest.dto.DivisionDto;
@@ -35,28 +36,42 @@ public class CalculadoraController {
 
 	private final CalculadoraService calculadoraService;
 
+	/**
+	 * Endpoint con: {@link RequestParam}
+	 */
 	@GetMapping("/sum")
 	public double sum(@RequestParam double num1, @RequestParam double num2) {
 		return calculadoraService.sum(num1, num2);
 	}
 
+	/**
+	 * Endpoint con: {@link PathVariable}
+	 */
 	@GetMapping("/minus/{num1}/{num2}")
-	public double minus(@PathVariable Double num1, @PathVariable Double num2) {
+	public double minus(@PathVariable double num1, @PathVariable double num2) {
 		return calculadoraService.minus(num1, num2);
 	}
 
+	/**
+	 * Endpoint con: dto {@link MultiplyDto}
+	 */
 	@GetMapping("/multiply")
 	public double multiply(MultiplyDto calculoDto) {
 		return calculadoraService.multiply(calculoDto.getNum1(), calculoDto.getNum2());
 	}
 
+	/**
+	 * Endpoint con: dto {@link DivisionDto} y con {@link ResponseBody}
+	 */
 	@PostMapping("/divide")
 	public double divide(@Valid @RequestBody DivisionDto calculoDto) {
 		return calculadoraService.divide(calculoDto.getDividend(), calculoDto.getDivisor());
 	}
 
 	/**
-	 * para que en local no esté en español y en remoto en la pipe de github en
+	 * Endpoint con: {@link RequestParam} y validación
+	 * <p>
+	 * Para que en local no esté en español y en remoto en la pipe de github en
 	 * inglés se decide setear en inglés el mensaje
 	 */
 	@GetMapping("/square-root")
@@ -66,7 +81,9 @@ public class CalculadoraController {
 	}
 
 	/**
-	 * para que en local no esté en español y en remoto en la pipe de github en
+	 * Endpoint con: {@link PathVariable} y validación
+	 * <p>
+	 * Para que en local no esté en español y en remoto en la pipe de github en
 	 * inglés se decide setear en inglés el mensaje
 	 */
 	@GetMapping("/absolute/{number}")
@@ -75,6 +92,9 @@ public class CalculadoraController {
 		return calculadoraService.absolute(number);
 	}
 
+	/**
+	 * Endpoint con: dto {@link RoundDto}, con {@link @RequestBody} y validación
+	 */
 	@PostMapping("/round")
 	public double round(@Valid @RequestBody RoundDto dto) {
 		return calculadoraService.round(dto.getNumber());

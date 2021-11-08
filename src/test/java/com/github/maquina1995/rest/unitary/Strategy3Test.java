@@ -1,4 +1,4 @@
-package com.github.maquina1995.rest;
+package com.github.maquina1995.rest.unitary;
 
 import java.util.Map;
 
@@ -16,6 +16,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import com.github.maquina1995.rest.controller.CalculadoraController;
 import com.github.maquina1995.rest.dto.DivisionDto;
 import com.github.maquina1995.rest.dto.RoundDto;
 import com.github.maquina1995.rest.service.CalculadoraService;
@@ -64,6 +65,9 @@ class Strategy3Test {
 	@MockBean
 	private CalculadoraService calculadoraService;
 
+	/**
+	 * Test de: {@link CalculadoraController#sum(double, double)}
+	 */
 	@Test
 	void sumTest() {
 		// given
@@ -79,6 +83,9 @@ class Strategy3Test {
 		Assertions.assertEquals(15d, response.getBody());
 	}
 
+	/**
+	 * Test de: {@link CalculadoraController#sum(double, double)}
+	 */
 	@Test
 	void sumExchangeTest() {
 		// given
@@ -94,6 +101,9 @@ class Strategy3Test {
 		Assertions.assertEquals(15d, response.getBody());
 	}
 
+	/**
+	 * Test de: {@link CalculadoraController#minus(double, double)}
+	 */
 	@Test
 	void minusTest() {
 		// given
@@ -108,6 +118,9 @@ class Strategy3Test {
 		Assertions.assertEquals(5d, response.getBody());
 	}
 
+	/**
+	 * Test de: {@link CalculadoraController#minus(double, double)}
+	 */
 	@Test
 	void minusExchangeTest() {
 		// given
@@ -123,6 +136,10 @@ class Strategy3Test {
 		Assertions.assertEquals(5d, response.getBody());
 	}
 
+	/**
+	 * Test de:
+	 * {@link CalculadoraController#multiply(com.github.maquina1995.rest.dto.MultiplyDto)}
+	 */
 	@Test
 	void multiplyTest() {
 		// given
@@ -138,6 +155,10 @@ class Strategy3Test {
 		Assertions.assertEquals(50d, response.getBody());
 	}
 
+	/**
+	 * Test de:
+	 * {@link CalculadoraController#multiply(com.github.maquina1995.rest.dto.MultiplyDto)}
+	 */
 	@Test
 	void multiplyExchangeTest() {
 		// given
@@ -153,6 +174,9 @@ class Strategy3Test {
 		Assertions.assertEquals(50d, response.getBody());
 	}
 
+	/**
+	 * Test de: {@link CalculadoraController#divide(DivisionDto)}
+	 */
 	@Test
 	void divideTest() {
 		// given
@@ -172,6 +196,9 @@ class Strategy3Test {
 		Assertions.assertEquals(2d, response.getBody());
 	}
 
+	/**
+	 * Test de: {@link CalculadoraController#divide(DivisionDto)}
+	 */
 	@Test
 	void divideExchangeTest() {
 		// given
@@ -194,6 +221,8 @@ class Strategy3Test {
 	}
 
 	/**
+	 * Test de: {@link CalculadoraController#divide(DivisionDto)}
+	 * <p>
 	 * Para los casos en los que entre la validación de campos necesitamos usar el
 	 * exchange
 	 * <p>
@@ -206,7 +235,6 @@ class Strategy3Test {
 	 * En cambio con el
 	 * {@link TestRestTemplate#exchange(String, HttpMethod, HttpEntity, ParameterizedTypeReference, Object...)}
 	 * podemos establecer la respuesta a {@link Map} <String,String>
-	 * 
 	 */
 	@Test
 	void divideBadRequestTest() {
@@ -234,6 +262,9 @@ class Strategy3Test {
 		Assertions.assertEquals("must be greater than or equal to 1", errorMap.get("dividend"));
 	}
 
+	/**
+	 * Test de: {@link CalculadoraController#squareRoot(Integer)}
+	 */
 	@Test
 	void squareRootBadRequestTest() {
 
@@ -252,6 +283,9 @@ class Strategy3Test {
 		Assertions.assertEquals("Need to be greater than 1", errorMap.get("number"));
 	}
 
+	/**
+	 * Test de: {@link CalculadoraController#absolute(Integer)}
+	 */
 	@Test
 	void absoluteBadRequestTest() {
 
@@ -270,6 +304,9 @@ class Strategy3Test {
 		Assertions.assertEquals("Need to be greater than 1", errorMap.get("number"));
 	}
 
+	/**
+	 * Test de: {@link CalculadoraController#round(RoundDto)}
+	 */
 	@Test
 	void roundBadRequestTest() {
 
